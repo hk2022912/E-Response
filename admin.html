@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Dashboard - E-Response</title>
+  <link rel="stylesheet" href="admin.css"/>
+</head>
+<body>
+  <header>
+    <div class="container header-container">
+      <div class="logo-title">
+        <img src="dp.png" alt="E-Response Logo" class="logo" />
+        <h1 class="site-title">E-Response Admin</h1>
+      </div>
+      <button class="hamburger" id="menu-toggle" aria-label="Toggle navigation menu">☰</button>
+      <nav>
+        <ul class="nav-links" id="nav-menu">
+          <li><a href="homepage.html">Home</a></li>
+          <li><a href="admin.html" class="active">Admin</a></li>
+          <li><a href="emergency_contacts.html">View Contacts</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="#" class="logout-btn">Log Out</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="container admin-dashboard">
+      <h2 class="dashboard-title">Admin Dashboard</h2>
+      <p class="dashboard-description">Manage emergency contacts for the E-Response system. Add new contacts, edit existing ones, or remove outdated information.</p>
+
+      <section class="admin-controls">
+        <!-- Emergency Contact Form -->
+        <article class="admin-card">
+          <h3 id="contactFormTitle">Add Emergency Contact</h3>
+          <form id="contactForm">
+            <input type="hidden" id="contactId" name="contactId">
+            <div class="form-group">
+              <label for="title">Agency Code</label>
+              <input type="text" id="title" name="title" required placeholder="e.g. PNP" />
+            </div>
+            <div class="form-group">
+              <label for="fullName">Full Agency Name</label>
+              <input type="text" id="fullName" name="fullName" required placeholder="e.g. Philippine National Police" />
+            </div>
+            <div class="form-group">
+              <label for="icon">Icon (Emoji)</label>
+              <input type="text" id="icon" name="icon" required placeholder="e.g. 👮" />
+            </div>
+            <div class="form-group">
+              <label for="description">Description</label>
+              <textarea id="description" name="description" rows="3" required placeholder="Brief description of the agency..."></textarea>
+            </div>
+            <div class="form-group">
+              <label for="phone">Phone Number</label>
+              <input type="text" id="phone" name="phone" required placeholder="e.g. (02) 8426-0246" />
+            </div>
+            <div class="form-group">
+              <label for="email">Email Address</label>
+              <input type="email" id="email" name="email" required placeholder="e.g. info@agency.gov.ph" />
+            </div>
+            <div class="form-group">
+              <label for="website">Website URL</label>
+              <input type="url" id="website" name="website" required placeholder="https://www.agency.gov.ph" />
+            </div>
+            <div class="form-group">
+              <label for="address">Address</label>
+              <input type="text" id="address" name="address" required placeholder="e.g. Agency Headquarters, City" />
+            </div>
+            <div class="form-actions">
+              <button type="submit" id="submitBtn" class="btn btn-primary">Add Contact</button>
+              <button type="button" id="cancelBtn" class="btn btn-secondary" style="display:none;">Cancel</button>
+            </div>
+          </form>
+        </article>
+
+        <!-- Emergency Contact List -->
+        <article class="admin-card">
+          <h3>Manage Emergency Contacts</h3>
+          <div class="search-box">
+            <input type="text" id="searchContacts" placeholder="Search contacts...">
+          </div>
+          <div class="contact-table-container">
+            <table class="contact-table">
+              <thead>
+                <tr>
+                  <th>Agency</th>
+                  <th>Phone</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="contactList">
+                <!-- Contact list will be populated here -->
+              </tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+    </section>
+  </main>
+
+  <!-- Confirmation Modal -->
+  <div id="confirmModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Confirm Deletion</h2>
+        <button class="close-button" id="closeConfirmModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to delete this contact? This action cannot be undone.</p>
+        <div class="modal-actions">
+          <button id="confirmDelete" class="btn btn-danger">Delete</button>
+          <button id="cancelDelete" class="btn btn-secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Message -->
+  <div id="successMessage" class="success-message">
+    <div class="success-content">
+      <span class="success-icon">✓</span>
+      <span id="successText" class="success-text">Contact saved successfully!</span>
+    </div>
+  </div>
+
+  <script>
+    // Initial contact data from your existing emergency_contacts.html
+    let contactInfo = {
+      phivolcs: {
+        title: 'PHIVOLCS',
+        fullName: 'Philippine Institute of Volcanology and Seismology',
+        logo: '🏢',
+        description: 'PHIVOLCS is a service institute of the Department of Science and Technology (DOST) that monitors earthquake and volcanic activity in the Philippines.',
+        phone: '(02) 8426-1468 to 79',
+        email: 'info@phivolcs.dost.gov.ph',
+        website: 'https://www.phivolcs.dost.gov.ph/',
+        address: 'PHIVOLCS Building, C.P. Garcia Avenue, UP Campus, Diliman, Quezon City'
+      },
+      doh: {
+        title: 'DOH',
+        fullName: 'Department of Health',
+        logo: '🏥',
+        description: 'The Department of Health is the principal health agency responsible for ensuring access to basic health services.',
+        phone: '1555 / (02) 894-COVID / (02) 8651-7800',
+        email: 'callcenter@doh.gov.ph',
+        website: 'https://doh.gov.ph',
+        address: 'San Lazaro Compound, Santa Cruz, Manila'
+      },
+      pnp: {
+        title: 'PNP',
+        fullName: 'Philippine National Police',
+        logo: '👮',
+        description: 'The PNP is the armed civilian national police force of the Philippines that provides law enforcement services across the country.',
+        phone: '117 / (02) 8722-0650',
+        email: 'pnpo@pnp.gov.ph',
+        website: 'https://pnp.gov.ph',
+        address: 'PNP National Headquarters, Camp BGen Rafael T Crame, Quezon City'
+      },
+      redcross: {
+        title: 'Philippine Red Cross',
+        fullName: 'Philippine National Red Cross',
+        logo: '🔴',
+        description: 'The Philippine Red Cross provides humanitarian services including disaster response, blood services, safety services, and health services.',
+        phone: '143 / (02) 8790-2300',
+        email: 'communication@redcross.org.ph',
+        website: 'https://redcross.org.ph',
+        address: '37 EDSA corner Boni Avenue, Mandaluyong City'
+      },
+      hotline: {
+        title: 'Emergency Hotline',
+        fullName: 'National Emergency Hotline',
+        logo: '📞',
+        description: 'The nationwide emergency telephone number for the Philippines, providing quick access to emergency services.',
+        phone: '911',
+        email: 'info@911.gov.ph',
+        website: 'https://www.gov.ph',
+        address: 'Nationwide service'
+      },
+      pagasa: {
+        title: 'PAGASA',
+        fullName: 'Philippine Atmospheric, Geophysical and Astronomical Services Administration',
+        logo: '🌦️',
+        description: 'PAGASA provides weather forecasting, flood warnings, and astronomical services for the Philippines.',
+        phone: '(02) 8284-0800',
+        email: 'pagasa_bac@yahoo.com',
+        website: 'https://bagong.pagasa.dost.gov.ph',
+        address: 'Science Garden, Agham Road, Diliman, Quezon City'
+      },
+      bfp: {
+        title: 'BFP',
+        fullName: 'Bureau of Fire Protection',
+        logo: '🔥',
+        description: 'The Bureau of Fire Protection is responsible for ensuring public safety by fighting fires and responding to other emergencies.',
+        phone: '(02) 8426-0246',
+        email: 'bfp.osec@gmail.com',
+        website: 'https://bfp.gov.ph',
+        address: 'BFP National Headquarters, Agham Road, Quezon City'
+      },
+      ndrrmc: {
+        title: 'NDRRMC',
+        fullName: 'National Disaster Risk Reduction and Management Council',
+        logo: '🚨',
+        description: 'The NDRRMC is responsible for ensuring the protection and welfare of the people during disasters or emergencies.',
+        phone: '(02) 8911-1406 / (02) 8912-2665',
+        email: 'op@ndrrmc.gov.ph',
+        website: 'https://ndrrmc.gov.ph',
+        address: 'Camp General Emilio Aguinaldo, Quezon City'
+      },
+      dswd: {
+        title: 'DSWD',
+        fullName: 'Department of Social Welfare and Development',
+        logo: '🏛️',
+        description: 'The DSWD is the primary government agency responsible for the protection of social welfare rights and the promotion of social development.',
+        phone: '(02) 8931-8101',
+        email: 'inquiry@dswd.gov.ph',
+        website: 'https://dswd.gov.ph',
+        address: 'IBP Road, Batasan Pambansa Complex, Quezon City'
+      }
+    };
+
+    // DOM Elements
+    const contactForm = document.getElementById('contactForm');
+    const contactFormTitle = document.getElementById('contactFormTitle');
+    const contactList = document.getElementById('contactList');
+    const submitBtn = document.getElementById('submitBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const confirmModal = document.getElementById('confirmModal');
+    const closeConfirmModal = document.getElementById('closeConfirmModal');
+    const confirmDelete = document.getElementById('confirmDelete');
+    const cancelDelete = document.getElementById('cancelDelete');
+    const successMessage = document.getElementById('successMessage');
+    const successText = document.getElementById('successText');
+    const searchInput = document.getElementById('searchContacts');
+    const menuToggle = document.getElementById('menu-toggle');
+    const navMenu = document.getElementById('nav-menu');
+    
+    // Editing state variables
+    let isEditing = false;
+    let currentId = null;
+    let deleteId = null;
+
+    // Initialize the app
+    document.addEventListener('DOMContentLoaded', function() {
+      // Load contacts from localStorage or use default
+      loadContacts();
+      
+      // Display contacts
+      displayContacts();
+      
+      // Setup event listeners
+      setupEventListeners();
+      
+      // Check auth
+      checkAuthentication();
+    });
+
+    // Load contacts from localStorage if available
+    function loadContacts() {
+      const savedContacts = localStorage.getItem('emergencyContacts');
+      if (savedContacts) {
+        contactInfo = JSON.parse(savedContacts);
+      } else {
+        // First time - save defaults to localStorage
+        localStorage.setItem('emergencyContacts', JSON.stringify(contactInfo));
+      }
+    }
+
+    // Save contacts to localStorage
+    function saveContacts() {
+      localStorage.setItem('emergencyContacts', JSON.stringify(contactInfo));
+    }
+
+    // Display contacts in the table
+    function displayContacts(searchTerm = '') {
+      contactList.innerHTML = '';
+      
+      const entries = Object.entries(contactInfo);
+      
+      if (entries.length === 0) {
+        contactList.innerHTML = '<tr><td colspan="3" class="no-contacts">No emergency contacts found</td></tr>';
+        return;
+      }
+      
+      // Filter by search term if provided
+      const filteredEntries = searchTerm ? 
+        entries.filter(([id, contact]) => {
+          return contact.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                 contact.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                 contact.phone.toLowerCase().includes(searchTerm.toLowerCase());
+        }) : entries;
+      
+      if (filteredEntries.length === 0) {
+        contactList.innerHTML = '<tr><td colspan="3" class="no-contacts">No matching contacts found</td></tr>';
+        return;
+      }
+      
+      filteredEntries.forEach(([id, contact]) => {
+        const row = document.createElement('tr');
+        
+        row.innerHTML = `
+          <td>
+            <div class="contact-name">
+              <span class="contact-icon">${contact.logo}</span>
+              <div>
+                <strong>${contact.title}</strong>
+                <div class="full-name">${contact.fullName}</div>
+              </div>
+            </div>
+          </td>
+          <td>${contact.phone}</td>
+          <td class="actions">
+            <button class="btn-edit" data-id="${id}" title="Edit contact">✏️</button>
+            <button class="btn-delete" data-id="${id}" title="Delete contact">🗑️</button>
+          </td>
+        `;
+        
+        contactList.appendChild(row);
+      });
+      
+      // Add event listeners to buttons
+      document.querySelectorAll('.btn-edit').forEach(button => {
+        button.addEventListener('click', handleEdit);
+      });
+      
+      document.querySelectorAll('.btn-delete').forEach(button => {
+        button.addEventListener('click', handleDelete);
+      });
+    }
+
+    // Setup event listeners
+    function setupEventListeners() {
+      // Form submission
+      contactForm.addEventListener('submit', handleFormSubmit);
+      
+      // Cancel button
+      cancelBtn.addEventListener('click', resetForm);
+      
+      // Search functionality
+      searchInput.addEventListener('input', function() {
+        displayContacts(this.value);
+      });
+      
+      // Confirm deletion modal
+      confirmDelete.addEventListener('click', confirmDeleteContact);
+      cancelDelete.addEventListener('click', closeModal);
+      closeConfirmModal.addEventListener('click', closeModal);
+      
+      // Mobile menu toggle
+      menuToggle.addEventListener('click', function() {
+        navMenu.classList.toggle('active');
+      });
+      
+      // Logout button
+      document.querySelector('.logout-btn').addEventListener('click', function(e) {
+        e.preventDefault();
+        localStorage.setItem('isLoggedIn', 'false');
+        localStorage.setItem('logout-event', Date.now());
+        window.location.href = 'login.html';
+      });
+    }
+
+    // Handle form submission (add/edit)
+    function handleFormSubmit(e) {
+      e.preventDefault();
+      
+      const formData = new FormData(contactForm);
+      const contactId = formData.get('contactId') || generateId(formData.get('title'));
+      
+      // Create contact object
+      const contact = {
+        title: formData.get('title'),
+        fullName: formData.get('fullName'),
+        logo: formData.get('icon'),
+        description: formData.get('description'),
+        phone: formData.get('phone'),
+        email: formData.get('email'),
+        website: formData.get('website'),
+        address: formData.get('address')
+      };
+      
+      // Add or update contact
+      contactInfo[contactId] = contact;
+      
+      // Save to localStorage
+      saveContacts();
+      
+      // Show success message
+      showSuccessMessage(isEditing ? 'Contact updated successfully!' : 'Contact added successfully!');
+      
+      // Reset form and display updated contacts
+      resetForm();
+      displayContacts();
+    }
+
+    // Handle edit button click
+    function handleEdit(e) {
+      const id = e.currentTarget.getAttribute('data-id');
+      const contact = contactInfo[id];
+      
+      // Set form values
+      document.getElementById('contactId').value = id;
+      document.getElementById('title').value = contact.title;
+      document.getElementById('fullName').value = contact.fullName;
+      document.getElementById('icon').value = contact.logo;
+      document.getElementById('description').value = contact.description;
+      document.getElementById('phone').value = contact.phone;
+      document.getElementById('email').value = contact.email;
+      document.getElementById('website').value = contact.website;
+      document.getElementById('address').value = contact.address;
+      
+      // Update UI for editing mode
+      contactFormTitle.textContent = 'Edit Emergency Contact';
+      submitBtn.textContent = 'Update Contact';
+      cancelBtn.style.display = 'inline-block';
+      
+      // Set editing state
+      isEditing = true;
+      currentId = id;
+      
+      // Scroll to form
+      contactForm.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Handle delete button click
+    function handleDelete(e) {
+      const id = e.currentTarget.getAttribute('data-id');
+      deleteId = id;
+      
+      // Show confirmation modal
+      confirmModal.style.display = 'flex';
+    }
+
+    // Confirm delete contact
+    function confirmDeleteContact() {
+      if (deleteId && contactInfo[deleteId]) {
+        // Delete the contact
+        delete contactInfo[deleteId];
+        
+        // Save to localStorage
+        saveContacts();
+        
+        // Close modal
+        closeModal();
+        
+        // Show success message
+        showSuccessMessage('Contact deleted successfully!');
+        
+        // Update display
+        displayContacts();
+      }
+    }
+
+    // Reset form to add mode
+    function resetForm() {
+      contactForm.reset();
+      document.getElementById('contactId').value = '';
+      
+      // Update UI for add mode
+      contactFormTitle.textContent = 'Add Emergency Contact';
+      submitBtn.textContent = 'Add Contact';
+      cancelBtn.style.display = 'none';
+      
+      // Reset editing state
+      isEditing = false;
+      currentId = null;
+    }
+
+    // Close modal
+    function closeModal() {
+      confirmModal.style.display = 'none';
+    }
+
+    // Show success message
+    function showSuccessMessage(message) {
+      successText.textContent = message;
+      successMessage.classList.add('show');
+      
+      // Hide after 3 seconds
+      setTimeout(() => {
+        successMessage.classList.remove('show');
+      }, 3000);
+    }
+
+    // Generate ID from title (for new contacts)
+    function generateId(title) {
+      // Create a lowercase slug from the title
+      const baseId = title.toLowerCase().replace(/[^a-z0-9]/g, '');
+      
+      // Check if ID already exists
+      if (!contactInfo[baseId]) {
+        return baseId;
+      }
+      
+      // If exists, add a number
+      let counter = 1;
+      while (contactInfo[`${baseId}${counter}`]) {
+        counter++;
+      }
+      
+      return `${baseId}${counter}`;
+    }
+
+    // Check if user is authenticated
+    function checkAuthentication() {
+      const isLoggedIn = localStorage.getItem('isLoggedIn');
+      if (isLoggedIn !== 'true') {
+        window.location.href = 'login.html';
+      }
+    }
+
+    // Listen for storage events (for logout across tabs)
+    window.addEventListener('storage', function(event) {
+      if (event.key === 'logout-event') {
+        window.location.href = 'login.html';
+      }
+    });
+  </script>
+</body>
+</html>

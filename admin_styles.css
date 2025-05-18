@@ -1,0 +1,118 @@
+/* Admin Interface Styles */
+.admin-indicator {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    background-color: #ff5722;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-weight: bold;
+    z-index: 1000;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  }
+  
+  .editable {
+    position: relative;
+    padding: 5px;
+    transition: background-color 0.3s;
+  }
+  
+  .admin .editable:hover {
+    background-color: rgba(255, 235, 59, 0.15);
+    border-radius: 4px;
+  }
+  
+  .edit-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background-color: #2196F3;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.7;
+    transition: opacity 0.3s;
+  }
+  
+  .edit-btn:hover {
+    opacity: 1;
+  }
+  
+  .content-editor {
+    width: 100%;
+    padding: 8px;
+    border: 2px solid #2196F3;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: inherit;
+    margin-bottom: 10px;
+  }
+  
+  textarea.content-editor {
+    min-height: 150px;
+  }
+  
+  .edit-controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+  }
+  
+  .edit-controls button {
+    padding: 5px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  
+  .save-btn {
+    background-color: #4CAF50;
+    color: white;
+  }
+  
+  .cancel-btn {
+    background-color: #f44336;
+    color: white;
+  }
+  
+  .admin-message {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 10px 20px;
+    border-radius: 4px;
+    color: white;
+    z-index: 2000;
+    animation: fadeIn 0.3s;
+  }
+  
+  .admin-message.success {
+    background-color: #4CAF50;
+  }
+  
+  .admin-message.error {
+    background-color: #f44336;
+  }
+  
+  .admin-message.fade-out {
+    animation: fadeOut 0.5s;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  @keyframes fadeOut {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(20px); }
+  }
